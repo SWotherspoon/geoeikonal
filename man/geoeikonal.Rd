@@ -37,8 +37,8 @@ the geographic extent of the grid, assuming the entries of the
 \code{cost} matrix represent the centres of the grid cells.
 
 Distances are calculated assuming a spherical earth. If the
-cost in each cell is the radius of the earth (6378.137km), then
-the results are distances in kilometres.
+cost in each cell is one, then the results are distances in
+kilometres.
 }
 \references{
 Sethian, J.A. (1996), A fast marching level set method

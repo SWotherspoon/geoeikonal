@@ -27,6 +27,6 @@ source point, and negative, \code{NA} or \code{Inf} entries represent
 barriers that cannot be traversed.
 
 Distances are calculated assuming a spherical earth. If the
-cost in each cell is the radius of the earth (6378.137km), then
-the results are distances in kilometres.
+cost in each cell is one, then the results are distances in
+kilometres.
 }

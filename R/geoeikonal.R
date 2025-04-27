@@ -19,8 +19,8 @@
 ##' `cost` matrix represent the centres of the grid cells.
 ##' 
 ##' Distances are calculated assuming a spherical earth. If the 
-##' cost in each cell is the radius of the earth (6378.137km), then 
-##' the results are distances in kilometres.
+##' cost in each cell is one, then the results are distances in 
+##' kilometres.
 ##'
 ##' @title Solve the Eikonal Equation on a Lon/Lat Grid
 ##' @param cost A matrix of travel costs - see details.
@@ -91,8 +91,8 @@ grdeikonal <- function(cost, hx=1, hy=1) {
 ##' barriers that cannot be traversed.
 ##'
 ##' Distances are calculated assuming a spherical earth. If the 
-##' cost in each cell is the radius of the earth (6378.137km), then 
-##' the results are distances in kilometres.
+##' cost in each cell is one, then the results are distances in 
+##' kilometres.
 ##'
 ##' @title Solve the Eikonal Equation on a Lon/Lat Raster
 ##' @param cost A `SpatRaster` with a longitude/latitude coordinate
