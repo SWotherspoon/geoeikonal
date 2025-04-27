@@ -19,3 +19,5 @@ Suggests:
     rnaturalearth,
     rnaturalearthdata
 VignetteBuilder: knitr
+URL: https://github.com/SWotherspoon/geoeikonal
+BugReports: https://github.com/SWotherspoon/geoeikonal/issues
