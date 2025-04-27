@@ -1,0 +1,108 @@
+##' Solve the Eikonal Equation on a Lon/Lat Grid
+##'
+##' This functions computes the minimum travel cost to each point in
+##' a regular longitude/latitude grid from a set of source points by
+##' solving the Eikonal equation with a fast marching method.
+##'
+##' The `cost` argument is a matrix of travel costs through the cells 
+##' of the grid, and is oriented so that longitude increases down the
+##' rows of the matrix, and latitude decreases across the columns.
+##' Positive entries of the `cost` matrix give the cost of travel 
+##' through the corresponding cell of the grid, while `0` entries
+##' represent source points, and negative, `NA` or `Inf` entries
+##' represent barriers that cannot be traversed. The `extent` argument
+##' is a vector of the form `c(lon_min, lon_max, lat_min, lat_max)`
+##' that defines the geographic extent of the grid, assuming the entries
+##' of the `cost` matrix represent the centres of the grid cells.
+##' form `c(lon_min, lon_max, lat_min, lat_max)` that defines the
+##' geographic extent of the grid, assuming the entries of the `cost`
+##' matrix represent the centres of the grid cells.  
+##' 
+##' Distances are calculated assuming a spherical earth.
+##'
+##' @param cost A matrix of travel costs - see details.
+##' @param extent A vector of grid extents
+##' @return A matrix of minimum travel costs to a source point
+##' @references Sethian, J.A. (1996), A fast marching level set method
+##'   for monotonically advancing fronts,
+##'   \emph{Proc. Natl. Acad. Sci.}  93 (4), 1591-1595.
+##' @export
+geoeikonal <- function(cost, extent) {
+    # Input validation
+    if(!is.matrix(cost)) stop("cost must be a matrix")
+    if(!is.vector(extent) || length(extent) != 4 ||
+      extent[1] >= extent[2] || extent[3] >= extent[4] || extent[3] < -90 || extent[4] > 90)
+        stop("extent must be a vector of the form c(lon_min, lon_max, lat_min, lat_max)")
+    if(!is.double(cost)) storage.mode(cost) <- "double"
+
+    # Call C function
+    .Call(C_geoeikonal, cost, extent, matrix(0,nrow(cost),ncol(cost)))
+}
+
+
+
+##' Solve the Eikonal Equation on a regular Grid
+##'
+##' This functions computes the minimum travel cost to each point in
+##' a regular grid from a set of source points by solving the Eikonal
+##'equation with a fast marching method.
+##'
+##' The `cost` argument is a matrix of travel costs through the cells 
+##' of the grid, and is oriented so that x increases down the rows of the
+##' grid, and y increases across the columns.  Positive entries of the
+##' `cost` matrix give the cost of travel through the corresponding cell
+##' of the grid, while `0` entries represent a source point, and negative,
+##' `NA` or `Inf` entries represent barriers that cannot be traversed.  The
+##' `hx` and `hy` arguments give the grid spacings in the x and y directions.
+##'
+##' @param cost A matrix of travel costs - see details.
+##' @param hx The grid spacing in the x direction
+##' @param hy The grid spacing in the y direction
+##' @return A matrix of minimum travel costs to a source point
+##' @references Sethian, J.A. (1996), A fast marching level set method
+##'   for monotonically advancing fronts,
+##'   \emph{Proc. Natl. Acad. Sci.}  93 (4), 1591-1595.
+##' @export
+grdeikonal <- function(cost, hx=1,hy=1) {
+    # Input validation
+    if(!is.matrix(cost)) stop("cost must be a matrix")
+    if(!is.double(cost)) storage.mode(cost) <- "double"
+
+    # Call C function
+    .Call(C_grdeikonal, cost, hx, hy, matrix(0.0,nrow(cost),ncol(cost)))
+}
+
+
+## Solve the Eikonal equation for a lon/lat raster
+##'
+##' This functions computes the minimum travel cost to each point 
+##' in a longitude/latitude raster from a set of source points by
+##' solving the Eikonal equation with a fast marching method.
+##'
+##' The `cost` argument must be a `SpatRaster` with a 
+##' longitude/latitude coordinate reference system.  Positive entries
+##' of the `cost` raster give the cost of travel through the
+##' corresponding cell of the raster, while `0` entries represent a
+##' source point, and negative, `NA` or `Inf` entries represent
+##' barriers that cannot be traversed.  
+##'
+##' Distances are calculated assuming a spherical earth.
+##'
+##' @param cost A `SpatRaster` with a longitude/latitude coordinate
+##'   reference system.
+##' @return A matrix of minimum travel costs to a source point
+##' @export
+rsteikonal <- function(cost) {
+  ## Check CRS is long/lat
+  if(!terra::is.lonlat(cost)) stop("cost matrix must have a lon/lat CRS")
+  ## Convert the raster to a matrix
+  extent <- as.vector(terra::ext(cost))
+  C <- matrix(terra::values(cost),terra::ncol(cost),terra::nrow(cost))
+  # Call the C function
+  r <- .Call(C_geoeikonal, C, extent, matrix(0,nrow(C),ncol(C)))
+  terra::rast(nrows=terra::nrow(cost), ncols=terra::ncol(cost),
+              extent=terra::ext(cost), crs=terra::crs(cost), 
+              vals=as.vector(r))
+}
+
+

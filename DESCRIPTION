@@ -1,0 +1,21 @@
+Package: geoeikonal
+Title: Solve the Eikonal Equation on a Lon/Lat Grid
+Version: 0.1.0
+Authors@R: 
+    c(person("Simon", "Wotherspoon", , "Simon.Wotherspoon@aad.gov.au", role = c("aut", "cre"),
+             comment = c(ORCID = "0000-0002-6947-4445")),
+      person("Dylan", "Wotherspoon", , "dylan.wotherspoon.au@gmail.com", role = c("aut")))
+Description: Calculate shortest distance to target locations on an lon/lat grid by solving the
+    eikonal equation with a fast marching algorithm.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    terra
+Suggests: 
+    knitr,
+    rmarkdown,
+    rnaturalearth,
+    rnaturalearthdata
+VignetteBuilder: knitr

@@ -1,0 +1,107 @@
+---
+title: "Geoeikonal"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Geoeikonal}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 7,
+  fig.height = 4,
+  comment = "#>"
+)
+```
+
+The `geoeikonal` package computes generalized distances and arrival times on a geographic grid by
+solving the eikonal equation
+$$
+| \nabla D | = C
+$$
+
+by the fast marching algorithm of Sethian (1996). If $C$ represents the local cost of travel, then 
+$D$ represents the cost weighted distance from a set of source points in the grid.  Alternately if 
+$C=S^{-1}$ where $S$ is the local speed of travel, then $D$ can be interpreted as an arrival time.
+
+```{r setup}
+library(geoeikonal)
+```
+
+
+## Example
+
+The `rsteikonal` function is analogous to the `gridDist` and `costDist` functions from the terra
+package.
+
+
+Given a raster of travel costs with source points marked as zero, 
+```{r}
+library(terra)
+cost <- rast(res=1,val=1)
+src <- cbind(-90.5,-30)
+values(cost)[cellFromXY(cost,src)] <- 0
+```
+
+for each point in the raster `rsteikonal` computes the minimal weighted distance to a source point 
+assuming a spherical Earth.
+```{r}
+d.eikonal <- rsteikonal(cost)
+plot(d.eikonal)
+```
+
+This is similar to `gridDist` 
+```{r}
+d.griddist <- gridDist(cost)
+plot(d.griddist)
+```
+
+`gridDist` assumes an ellipsoidal Earth and the minimal paths are constrained to pass through the 
+centers of the intervening cells. As a consequence, the gradient of the distance surface computed by
+`gridDist` is not smooth 
+```{r}
+plot(terrain(d.griddist,v="aspect"),col=hcl((1:360)%%360,180,65))
+```
+
+In contrast, the discontinuities in the gradient of the distance surface computed by `rsteikonal` 
+are determined by the cost function 
+```{r}
+plot(terrain(d.eikonal,v="aspect"),col=hcl((1:360)%%360,180,65))
+```
+
+## Barriers
+
+Cells with a cost that is missing, not finite or negative are treated as impenetrable barriers. 
+
+
+Create a raster map in which which the ocean has cost one but land is `NA`.
+```{r}
+library(rnaturalearth)
+library(rnaturalearthdata)
+cost <- rast(res=0.1,val=1)
+src <- cellFromXY(cost,cbind(-90.5,-30))
+values(cost)[src] <- 0
+## Extract land polygons with `rnaturalearth`
+land <- rasterize(vect(ne_countries(scale="medium",returnclass="sf")), cost, field = 1)
+cost[!is.na(land)] <- NA  # Set land cells to NA
+plot(cost)
+```
+
+The `rsteikonal` computes the minimal distance to the source point along paths constrained to lie in
+the ocean
+```{r}
+d.eikonal <- rsteikonal(cost)
+plot(d.eikonal)
+```
+
+The fast marching algorithm employed by `rsteikonal` relies on a four point neighbourhood, and so 
+a cell can be reached from another only if they are connected by a sequence of cells that share a 
+common edge. So in this example, the Black sea is not connected to the Mediterranean and is 
+unreachable from the source.  In contrast, `gridDist` uses an eight point neighbourhood and at this 
+resolution the Black sea is connected to the Mediterranean and can be reached from the source.
+```{r}
+d.griddist <- gridDist(cost)
+plot(d.griddist)
+```
