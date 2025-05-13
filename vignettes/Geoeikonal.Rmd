@@ -52,31 +52,31 @@ d.eikonal <- rsteikonal(cost)
 plot(d.eikonal)
 ```
 
-This is similar to `gridDist` 
+This is similar to `gridDist` from the terra package
 ```{r}
 d.griddist <- gridDist(cost)
 plot(d.griddist)
 ```
 
-`gridDist` assumes an ellipsoidal Earth and the minimal paths are constrained to pass through the 
-centers of the intervening cells. As a consequence, the gradient of the distance surface computed by
-`gridDist` is not smooth 
+The two differ in that `gridDist` assumes an ellipsoidal Earth, and `gridDist` computes the distance
+along paths that are constrained to pass through the centers of the intervening cells. This 
+constraint induces facets in the computed distance surface
 ```{r}
 plot(terrain(d.griddist,v="aspect"),col=hcl((1:360)%%360,180,65))
 ```
 
-In contrast, the discontinuities in the gradient of the distance surface computed by `rsteikonal` 
-are determined by the cost function 
+In contrast, `rsteikonal` computes distances along paths that do not necessarily pass through the 
+centers of the grid cells, and the distance surface is smoother
 ```{r}
 plot(terrain(d.eikonal,v="aspect"),col=hcl((1:360)%%360,180,65))
 ```
 
 ## Barriers
 
-Cells with a cost that is missing, not finite or negative are treated as impenetrable barriers. 
+Cells with a missing, non-finite or negative cost are treated as impenetrable barriers. 
 
-
-Create a raster map in which which the ocean has cost one but land is `NA`.
+Create a raster map in which which the ocean has cost one but land is `NA`, with a source point in
+the South Pacific
 ```{r}
 library(rnaturalearth)
 library(rnaturalearthdata)
@@ -89,19 +89,41 @@ cost[!is.na(land)] <- NA  # Set land cells to NA
 plot(cost)
 ```
 
-The `rsteikonal` computes the minimal distance to the source point along paths constrained to lie in
-the ocean
+In this case, `rsteikonal` computes the minimal distance to the source point along paths constrained 
+to lie in the ocean
 ```{r}
 d.eikonal <- rsteikonal(cost)
 plot(d.eikonal)
 ```
 
 The fast marching algorithm employed by `rsteikonal` relies on a four point neighbourhood, and so 
-a cell can be reached from another only if they are connected by a sequence of cells that share a 
-common edge. So in this example, the Black sea is not connected to the Mediterranean and is 
-unreachable from the source.  In contrast, `gridDist` uses an eight point neighbourhood and at this 
-resolution the Black sea is connected to the Mediterranean and can be reached from the source.
+one cell can be reached from another only if they are connected by a sequence of cells for which 
+each pair of successive cells share a common edge. In this example, the Black sea is not connected 
+to the Mediterranean and is unreachable from the source.  In contrast, `gridDist` uses an eight 
+point neighbourhood, and at this resolution the Black sea is connected to the Mediterranean and can 
+be reached from the source.
 ```{r}
 d.griddist <- gridDist(cost)
 plot(d.griddist)
 ```
+
+
+## gradient
+
+The gradient of the distance surface can be computed with the `rstgradient`
+```{r}
+g.eikonal <- rstgradient(d.eikonal)
+plot(g.eikonal)
+```
+
+This computes the same "upwind" gradient used in the fast marching algorithm, and so the modulus 
+of the gradient reproduces the cost function for cells that are reachable from the sources
+```{r}
+plot(sqrt(g.eikonal[[1]]^2 + g.eikonal[[2]]^2))
+```
+
+
+
+
+
+

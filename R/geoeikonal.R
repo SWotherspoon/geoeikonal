@@ -168,7 +168,7 @@ rstgradient <- function(dist) {
   r <-.Call(C_geogradient, D, extent, matrix(0,nrow(D),ncol(D)), matrix(0,nrow(D),ncol(D)))
   terra::rast(nrows=terra::nrow(dist), ncols=terra::ncol(dist), nlyrs=2,
               extent=terra::ext(dist), crs=terra::crs(dist), 
-              vals=as.vector(c(r[[1]],r[[2]])))
+              vals=as.vector(c(r[[1]],r[[2]])),names=c("lon","lat"))
 }
 
 
