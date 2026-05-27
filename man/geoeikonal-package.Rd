@@ -20,6 +20,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Simon Wotherspoon \email{Simon.Wotherspoon@aad.gov.au} (\href{https://orcid.org/0000-0002-6947-4445}{ORCID})
   \item Dylan Wotherspoon \email{dylan.wotherspoon.au@gmail.com}
 }
 

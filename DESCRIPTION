@@ -10,7 +10,6 @@ Description: Calculate shortest distance to target locations on an lon/lat grid 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Imports: 
     terra
 Suggests: 
@@ -21,3 +20,4 @@ Suggests:
 VignetteBuilder: knitr
 URL: https://github.com/SWotherspoon/geoeikonal
 BugReports: https://github.com/SWotherspoon/geoeikonal/issues
+Config/roxygen2/version: 8.0.0
